@@ -83,4 +83,41 @@ describe('PetStore test suit', () => {
             })
         })
     })
+
+    it('Finds Pets by status', () => {
+
+        cy.request({
+            method: 'GET',
+            url: "pet/findByStatus?status=pending",
+            form: true,
+            body: pet
+
+        }).then(response => {
+            expect(response.status).to.be.equal(200);
+            expect(response.body).to.be.an('array');
+            response.body.forEach(pet => {
+              expect(pet.status).to.be.equal("pending");
+            });
+        })
+    })
+
+    it('Deletes pet', () => {
+
+           cy.log('Find pet by id');
+           cy.request(`/pet/${petId}`).then(response => {
+               expect(response.status).to.be.equal(200);
+               expect(response.body.name).to.be.equal(pet.name);
+           })
+
+           cy.log('Delete found pet');
+           cy.request('DELETE', `/pet/${petId}`).then(deleteResponse => {
+               expect(deleteResponse.status).to.equal(200);
+           })
+
+           cy.log('Check that pet is removed');
+           cy.request(`/pet/${petId}`).then(verifyResponse => {
+             expect(verifyResponse.status).to.equal(404);
+             expect(verifyResponse.body.message).to.contain('Pet not found');
+           })
+    })
 })
